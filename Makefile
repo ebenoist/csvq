@@ -8,7 +8,7 @@ test:
 		@gb test
 
 install: build
-	@cp bin/csvq $(GOPATH)/bin/csvq
+	@cp bin/csvq /usr/local/bin/csvq
 
 release:
 	@env GOOS=linux gb build
