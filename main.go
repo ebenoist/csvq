@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -25,6 +26,10 @@ func main() {
 			Name:  "col, c",
 			Usage: "Specify the columns to print by name or number",
 		},
+		cli.BoolFlag{
+			Name:  "json, j",
+			Usage: "convert to json for use in jq",
+		},
 	}
 
 	app.Action = func(c *cli.Context) {
@@ -32,13 +37,42 @@ func main() {
 		if (stat.Mode() & os.ModeCharDevice) == 0 {
 			csv := readCSV(os.Stdin)
 			cols := parseColumns(c.GlobalString("col"), csv[0])
-			printCSV(csv, cols)
+
+			if c.GlobalBool("json") {
+				printJSON(csv, cols)
+			} else {
+				printCSV(csv, cols)
+			}
 		} else {
 			cli.ShowAppHelp(c)
 		}
 	}
 
 	app.Run(os.Args)
+}
+
+func printJSON(records [][]string, cols []int) {
+	header := selectCols(records[0], cols)
+
+	var out []map[string]interface{}
+
+	for _, r := range records {
+		s := selectCols(r, cols)
+
+		jRow := make(map[string]interface{})
+		for idx, val := range s {
+			jRow[header[idx]] = val
+		}
+
+		out = append(out, jRow)
+	}
+
+	r, err := json.Marshal(out)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Print(string(r))
 }
 
 func printCSV(records [][]string, cols []int) {
