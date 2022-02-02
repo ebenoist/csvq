@@ -2,14 +2,14 @@
 
 all: build test
 build:
-		@gb build
+		@go build
 
 test:
-		@gb test
+		@go test
 
 install: build
-	@cp bin/csvq /usr/local/bin/csvq
+	@go install
 
 release:
-	@env GOOS=linux gb build
-	@env GOOS=darwin gb build
+	@env GOOS=linux go build
+	@env GOOS=darwin go build
